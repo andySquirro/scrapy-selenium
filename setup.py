@@ -1,34 +1,30 @@
-"""This module contains the packaging routine for the pybook package"""
+"""
+Packaging script for scrapy-selenium (patched for modern pip)
+"""
 
+from pathlib import Path
 from setuptools import setup, find_packages
-try:
-    from pip.download import PipSession
-    from pip.req import parse_requirements
-except ImportError:
-    # It is quick hack to support pip 10 that has changed its internal
-    # structure of the modules.
-    from pip._internal.download import PipSession
-    from pip._internal.req.req_file import parse_requirements
 
 
-def get_requirements(source):
-    """Get the requirements from the given ``source``
-
-    Parameters
-    ----------
-    source: str
-        The filename containing the requirements
-
+def get_requirements(path):
     """
-
-    install_reqs = parse_requirements(filename=source, session=PipSession())
-
-    return [str(ir.req) for ir in install_reqs]
+    Read a requirements file, returning a list with comments / empty
+    lines stripped.
+    """
+    lines = (l.strip() for l in Path(path).read_text().splitlines())
+    return [l for l in lines if l and not l.startswith("#")]
 
 
 setup(
+    name="scrapy-selenium",
+    version="0.0.0+local",        # or read it from a file / tag
+    description="Scrapy middleware that drives a Selenium browser",
+    author="Original authors",
     packages=find_packages(),
-    install_requires=get_requirements('requirements/requirements.txt')
+    python_requires=">=3.8",
+    install_requires=get_requirements("requirements/requirements.txt"),
+    classifiers=[
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3",
+    ],
 )
-
-
