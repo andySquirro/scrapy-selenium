@@ -53,17 +53,19 @@ class SeleniumMiddleware:
 
         # locally installed driver
         if driver_executable_path is not None:
-            driver_kwargs = {
-                'executable_path': driver_executable_path,
-                f'{driver_name}_options': driver_options
-            }
-            self.driver = driver_klass(**driver_kwargs)
-        # remote driver
+            service_module = import_module(f'{webdriver_base_path}.service')
+            Service = getattr(service_module, 'Service')
+            service = Service(executable_path=driver_executable_path)
+
+            self.driver = driver_klass(service=service, options=driver_options)
         elif command_executor is not None:
             from selenium import webdriver
             capabilities = driver_options.to_capabilities()
-            self.driver = webdriver.Remote(command_executor=command_executor,
-                                           desired_capabilities=capabilities)
+            self.driver = webdriver.Remote(
+                command_executor=command_executor,
+                desired_capabilities=capabilities,
+                options=driver_options
+            )
 
     @classmethod
     def from_crawler(cls, crawler):
